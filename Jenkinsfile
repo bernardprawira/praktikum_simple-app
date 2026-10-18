@@ -1,38 +1,31 @@
 pipeline {
-  agent any
-  environment {
-    IMAGE_NAME = 'bernardprawira/praktikum_simple-app'
-    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-  }
-  stages {
-    stage('Checkout') { 
-      steps { checkout scm } 
-    }
-    stage('Build & Test App') { 
-      steps { 
-        bat 'echo "Menjalankan build aplikasi dan koneksi database di Windows..."' 
-      } 
-    }
-    stage('Build Docker Image') {
-      steps { 
-        bat "docker build -t %IMAGE_NAME%:%BUILD_NUMBER% ."
-      }
-    }
-    stage('Push ke Docker Hub') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials',
-            usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-          bat 'docker login -u %USER% -p %PASS%'
-          bat "docker push %IMAGE_NAME%:%BUILD_NUMBER%"
-          bat "docker tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:latest"
-          bat "docker push %IMAGE_NAME%:latest"
+    agent any
+    stages {
+        stage('Database Connection Test') {
+            steps {
+                echo 'Menguji koneksi database SQLite di dalam proyek...'
+                bat 'python -c "import sqlite3; conn = sqlite3.connect(\'database/database.db\'); print(\'Koneksi SQLite Berhasil!\'); conn.close()"'
+            }
         }
-      }
+        stage('Build Docker Image') {
+            steps {
+                echo 'Membuat Docker image aplikasi...'
+                bat 'docker build -t bernardprawira/praktikum_simple-app:latest .'
+            }
+        }
+        stage('Push ke Docker Hub') {
+            steps {
+                echo 'Mengirim image ke Docker Hub...'
+                bat 'docker push bernardprawira/praktikum_simple-app:latest'
+            }
+        }
     }
-  }
-  post { 
-    always { 
-      echo 'Pipeline Selesai!' 
-    } 
-  }
+    post {
+        success {
+            echo 'Pipeline dan pengujian database sukses dijalankan!'
+        }
+        failure {
+            echo 'Pipeline gagal, silakan periksa kembali konfigurasi.'
+        }
+    }
 }
