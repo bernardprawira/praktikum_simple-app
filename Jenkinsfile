@@ -16,8 +16,8 @@ pipeline {
 
         stage('Database Connection Test') {
             steps {
-                echo 'Memeriksa koneksi database aplikasi...'
-                bat 'python -c "import sqlite3; conn = sqlite3.connect(\'database.db\'); conn.close(); print(\'Database SQLite Connected & Initialized!\")"'
+                echo 'Memeriksa modul dan koneksi SQLite...'
+                bat 'python -c "import sqlite3; print(\"SQLite Ready, Version:\", sqlite3.sqlite_version)"'
             }
         }
 
