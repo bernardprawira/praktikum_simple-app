@@ -14,13 +14,6 @@ pipeline {
             }
         }
 
-        stage('Database Connection Test') {
-            steps {
-                echo 'Memeriksa modul dan koneksi SQLite...'
-                bat 'python -c "import sqlite3; print(\"SQLite Ready, Version:\", sqlite3.sqlite_version)"'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 echo 'Membangun Docker Image dari Dockerfile Python...'
