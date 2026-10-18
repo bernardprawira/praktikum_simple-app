@@ -2,10 +2,9 @@ pipeline {
     agent any
 
     environment {
-    IMAGE_NAME = 'bernardprawira/praktikum_simple-app'
-    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
-    DOCKER_BIN = 'C:\Program Files\Docker\Docker\resources\bin\docker.exe'
-} 
+        IMAGE_NAME = 'bernardprawira/praktikum_simple-app'
+        DOCKER_BIN = 'C:/Program Files/Docker/Docker/resources/bin/docker.exe'
+    } 
     
     stages {
         stage('Checkout SCM') {
@@ -18,7 +17,7 @@ pipeline {
         stage('Database Connection Test') {
             steps {
                 echo 'Memeriksa koneksi database aplikasi...'
-                bat 'echo Test Inisialisasi Database SQLite Success ✅'
+                bat 'python -c "import sqlite3; conn = sqlite3.connect(\'database.db\'); print(\'Database SQLite Connected & Initialized!\'); conn.close()"'
             }
         }
 
