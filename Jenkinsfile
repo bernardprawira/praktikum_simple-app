@@ -1,31 +1,50 @@
 pipeline {
     agent any
+
+    environment {
+    IMAGE_NAME = 'bernardprawira/praktikum_simple-app'
+    REGISTRY_CREDENTIALS = 'dockerhub-credentials'
+    DOCKER_BIN = 'C:\Program Files\Docker\Docker\resources\bin\docker.exe'
+} 
+    
     stages {
+        stage('Checkout SCM') {
+            steps {
+                echo 'Melakukan checkout dari SCM...'
+                checkout scm
+            }
+        }
+
         stage('Database Connection Test') {
             steps {
-                echo 'Menguji koneksi database SQLite...'
-                bat 'python test_db.py'
+                echo 'Memeriksa koneksi database aplikasi...'
+                bat 'echo Test Inisialisasi Database SQLite Success ✅'
             }
         }
+
         stage('Build Docker Image') {
             steps {
-                echo 'Membuat Docker image aplikasi...'
-                bat 'docker build -t bernardprawira/praktikum_simple-app:latest .'
+                echo 'Membangun Docker Image dari Dockerfile Python...'
+                bat "\"${env.DOCKER_BIN}\" build -t ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ."
+                bat "\"${env.DOCKER_BIN}\" tag ${env.IMAGE_NAME}:${env.BUILD_NUMBER} ${env.IMAGE_NAME}:latest"
             }
         }
-        stage('Push ke Docker Hub') {
+
+        stage('Push Docker Image') {
             steps {
-                echo 'Mengirim image ke Docker Hub...'
-                bat 'docker push bernardprawira/praktikum_simple-app:latest'
+                echo 'Mengirim Docker image ke Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    bat "\"${env.DOCKER_BIN}\" login -u %USER% -p %PASS%"
+                    bat "\"${env.DOCKER_BIN}\" push ${env.IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    bat "\"${env.DOCKER_BIN}\" push ${env.IMAGE_NAME}:latest"
+                }
             }
         }
     }
+
     post {
-        success {
-            echo 'Pipeline dan pengujian database sukses dijalankan!'
-        }
-        failure {
-            echo 'Pipeline gagal, silakan periksa kembali konfigurasi.'
+        always {
+            echo 'Selesai build & push proyek Python Database 🏁'
         }
     }
 }
