@@ -1,38 +1,32 @@
-import os
 import sqlite3
-from flask import Flask
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
 def init_db():
-    # Membuat folder 'database' otomatis jika belum ada
-    if not os.path.exists('database'):
-        os.makedirs('database')
-    
-    # Membuat koneksi ke file database di dalam folder database/
-    conn = sqlite3.connect('database/database.db')
+    # Menyimulasikan pembuatan dan koneksi ke database SQLite
+    conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS kunjungan (
+        CREATE TABLE IF NOT EXISTS status_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            pesan TEXT NOT NULL
         )
     ''')
+    cursor.execute("INSERT INTO status_log (pesan) VALUES ('Koneksi Database Berhasil!')")
     conn.commit()
     conn.close()
+    return "Database SQLite Connected & Initialized!"
 
 @app.route('/')
 def hello():
-    init_db()
-    conn = sqlite3.connect('database/database.db')
-    cursor = conn.cursor()
-    cursor.execute('INSERT INTO kunjungan DEFAULT VALUES')
-    conn.commit()
-    cursor.execute('SELECT COUNT(*) FROM kunjungan')
-    count = cursor.fetchone()[0]
-    conn.close()
-
-    return f"Halo dari Flask + Docker + Jenkins! | Total Kunjungan ke DB: {count}"
+    # Jalankan fungsi inisialisasi database saat route diakses
+    db_status = init_db()
+    return jsonify({
+        "message": "Halo dari Flask + Docker + Jenkins!",
+        "database_status": db_status,
+        "status": "Success"
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
