@@ -1,20 +1,18 @@
 # Gunakan image base Python
 FROM python:3.10-slim
 
-# Set working directory
+# Set working directory di dalam container
 WORKDIR /app
 
-# Copy file requirements.txt ke container
+# Copy requirements.txt dan install dependencies
 COPY requirements.txt ./
-
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy seluruh file project ke /app
+# Copy seluruh source code project ke container
 COPY . .
 
-# Expose port untuk Flask / FastAPI
+# Expose port aplikasi (misal Flask/FastAPI)
 EXPOSE 5000
 
-# Jalankan aplikasi
+# Jalankan aplikasi utama
 CMD ["python", "app.py"]
