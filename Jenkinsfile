@@ -3,8 +3,10 @@ pipeline {
     stages {
         stage('Database Connection Test') {
             steps {
-                echo 'Menguji koneksi database SQLite di dalam proyek...'
-                bat 'python -c "import sqlite3; conn = sqlite3.connect(\'database/database.db\'); print(\'Koneksi SQLite Berhasil!\'); conn.close()"'
+                echo 'Menguji koneksi database SQLite...'
+                bat '''
+                    python -c "import os, sqlite3; os.makedirs('database', exist_ok=True); conn = sqlite3.connect('database/database.db'); print('Koneksi SQLite Berhasil!'); conn.close()"
+                '''
             }
         }
         stage('Build Docker Image') {
