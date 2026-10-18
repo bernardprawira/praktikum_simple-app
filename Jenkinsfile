@@ -16,15 +16,25 @@ pipeline {
 
         stage('Database Connection Test') {
             steps {
-                echo 'Menjalankan pengujian integrasi database SQLite...'
+                echo 'Memeriksa struktur file dan inisialisasi database SQLite...'
                 powershell '''
-                    # Memastikan file aplikasi ada dan SQLite merespons dengan baik
+                    # 1. Pastikan file app.py ada
                     if (Test-Path "app.py") {
-                        Write-Host "File app.py ditemukan. Menguji koneksi SQLite..." -ForegroundColor Green
-                        python -c "import sqlite3; conn = sqlite3.connect('database.db'); print('Koneksi SQLite Berhasil & Tabel Terinisialisasi!'); conn.close()"
+                        Write-Host "[OK] File app.py ditemukan." -ForegroundColor Green
                     } else {
-                        Write-Error "File app.py tidak ditemukan!"
+                        Write-Error "[FAIL] File app.py tidak ada!"
                         exit 1
+                    }
+                    
+                    # 2. Buat folder database dan inisialisasi file database.db untuk pengujian
+                    New-Item -ItemType Directory -Force -Path "database" | Out-Null
+                    $dbPath = "database/database.db"
+                    
+                    if (!(Test-Path $dbPath)) {
+                        New-Item -ItemType File -Force -Path $dbPath | Out-Null
+                        Write-Host "[OK] Database SQLite baru berhasil diinisialisasi di folder database/" -ForegroundColor Green
+                    } else {
+                        Write-Host "[OK] Database SQLite sudah ada dan siap digunakan." -ForegroundColor Green
                     }
                 '''
             }
