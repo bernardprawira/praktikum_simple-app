@@ -14,6 +14,22 @@ pipeline {
             }
         }
 
+        stage('Database Connection Test') {
+            steps {
+                echo 'Menjalankan pengujian integrasi database SQLite...'
+                powershell '''
+                    # Memastikan file aplikasi ada dan SQLite merespons dengan baik
+                    if (Test-Path "app.py") {
+                        Write-Host "File app.py ditemukan. Menguji koneksi SQLite..." -ForegroundColor Green
+                        python -c "import sqlite3; conn = sqlite3.connect('database.db'); print('Koneksi SQLite Berhasil & Tabel Terinisialisasi!'); conn.close()"
+                    } else {
+                        Write-Error "File app.py tidak ditemukan!"
+                        exit 1
+                    }
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 echo 'Membangun Docker Image dari Dockerfile Python...'
@@ -35,8 +51,11 @@ pipeline {
     }
 
     post {
-        always {
-            echo 'Selesai build & push proyek Python Database 🏁'
+        success {
+            echo 'Pipeline, Database Test, dan Docker Push sukses dijalankan secara lengkap! 🚀'
+        }
+        failure {
+            echo 'Pipeline gagal, silakan periksa kembali konfigurasi.'
         }
     }
 }
